@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # 1. SERVICIO DE APLICACIÓN NODE.JS
+  app:
+    # Instrucción para construir la imagen usando el Dockerfile en este directorio
+    build: . 
+    container_name: node_app_tienda
+    ports:
+      # Mapeo de puertos: PUERTO_LOCAL:PUERTO_CONTENEDOR
+      - "3000:3000" 
+    depends_on:
+      - db # Asegura que la BD inicie antes que la aplicación
+    environment:
+      # Variable de entorno que Node.js usará para encontrar la BD
+      MYSQL_HOST: db 
+    volumes:
+      # Sincroniza el código local (para desarrollo) con el contenedor
+      - .:/usr/src/app 
+
+  # 2. SERVICIO DE BASE DE DATOS MYSQL
+  db:
+    image: mysql:8.0 # Imagen oficial de MySQL versión 8
+    container_name: mysql_tienda
+    restart: always
+    environment:
+      # Credenciales de la BD (DEBEN coincidir con tu server.js)
+      MYSQL_ROOT_PASSWORD: tiendadb123
+      MYSQL_DATABASE: tienda
+    ports:
+      # Mapeo opcional (3307) para acceder a MySQL desde tu escritorio si lo necesitas
+      - "3307:3306"
+    volumes:
+      # CRÍTICO: Monta tu script SQL para que se ejecute en el inicializador de MySQL.
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
